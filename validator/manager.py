@@ -7,8 +7,8 @@ from python_on_whales.utils import run
 
 from config import settings
 from loggers.logger import get_logger
-from validator.platform_client import PlatformClient
-from validator.executor import AgentExecutor
+from validator.platform_client import PlatformClient, PlatformError
+from validator.executor_factory import create_executor
 
 
 logger = get_logger()
@@ -49,6 +49,7 @@ class SandboxManager:
                 logger.error(f"Failed to send heartbeat: {e}")
 
         retries = 10
+        delay = 5  # seconds between retries
         job_run = None
         for _ in range(retries):
             try:
@@ -124,11 +125,11 @@ class SandboxManager:
             )
 
         for project_key in agent['project_keys']:
-            executor = AgentExecutor(
-                job_run,
-                agent_filepath,
-                project_key,
-                job_run_reports_dir,
+            executor = create_executor(
+                job_run=job_run,
+                agent_filepath=agent_filepath,
+                project_key=project_key,
+                job_run_reports_dir=job_run_reports_dir,
                 platform_client=self.platform_client,
             )
             executor.run()

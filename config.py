@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     local: bool = False
     wallet_name: str | None = None
 
-    chutes_api_key: str | None
+    chutes_api_key: str | None = None
 
     app_url: str = "bitsec.ai"
     platform_url: str = "https://bitsec.ai/"
@@ -22,6 +22,17 @@ class Settings(BaseSettings):
     skip_evaluation: bool = False
 
     use_bt_logging: bool = False
+
+    # Sandbox backend selection: "docker" (default) or "basilica"
+    sandbox_backend: str = "docker"
+
+    # Basilica SDK configuration (required when sandbox_backend="basilica")
+    basilica_api_url: str | None = None
+    basilica_api_token: str | None = None
+    basilica_image_prefix: str = "ghcr.io/bitsec-ai"
+    basilica_cpu: str | None = None      # e.g., "500m"
+    basilica_memory: str | None = None   # e.g., "512Mi"
+    basilica_timeout: int | None = None  # Timeout in seconds
 
     model_config = SettingsConfigDict(
         env_file=".env",
