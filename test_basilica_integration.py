@@ -85,8 +85,8 @@ def test_sdk_connection():
             assert result.exit_code == 0
             ok("Code execution")
 
-            sb.files.write("/sandbox/test.txt", "test content")
-            content = sb.files.read("/sandbox/test.txt")
+            sb.files.write("/workspace/test.txt", "test content")
+            content = sb.files.read("/workspace/test.txt")
             assert content == "test content"
             ok("File I/O")
         ok("Cleanup")
@@ -104,7 +104,7 @@ def test_agent_execution():
     agent_code = '''
 import json
 result = {"success": True, "message": "Agent executed successfully"}
-with open("/sandbox/report.json", "w") as f:
+with open("/workspace/report.json", "w") as f:
     json.dump(result, f)
 print("Agent completed")
 '''
@@ -113,13 +113,13 @@ print("Agent completed")
         with Sandbox.create(language="python", runtime="container") as sb:
             ok(f"Sandbox: {sb.sandbox_id}")
 
-            sb.files.write("/sandbox/agent.py", agent_code)
+            sb.files.write("/workspace/agent.py", agent_code)
             ok("Agent uploaded")
 
-            result = sb.process.exec(["python3", "/sandbox/agent.py"])
+            result = sb.process.exec(["python3", "/workspace/agent.py"])
             ok(f"Execution (exit_code={result.exit_code})")
 
-            report = json.loads(sb.files.read("/sandbox/report.json"))
+            report = json.loads(sb.files.read("/workspace/report.json"))
             assert report["success"] is True
             ok(f"Report: {report['message']}")
         return True
@@ -195,7 +195,7 @@ report = {{
     "message": f"Agent {{agent_id}} completed task successfully"
 }}
 
-with open("/sandbox/report.json", "w") as f:
+with open("/workspace/report.json", "w") as f:
     json.dump(report, f, indent=2)
 
 print(f"Agent {{agent_id}} completed: {{report['message']}}")
@@ -214,18 +214,18 @@ print(f"Processed {{len(results)}} items in {{elapsed:.2f}}s")
                 print(f"  📦 Agent {agent_id}: Sandbox {sb.sandbox_id[:8]}... created")
             
             # Upload and run agent code
-            sb.files.write("/sandbox/agent.py", agent_code)
+            sb.files.write("/workspace/agent.py", agent_code)
             
             with progress_lock:
                 print(f"  ⚙️  Agent {agent_id}: Executing task...")
             
-            exec_result = sb.process.exec(["python3", "/sandbox/agent.py"])
+            exec_result = sb.process.exec(["python3", "/workspace/agent.py"])
             result.exit_code = exec_result.exit_code
             result.output = exec_result.stdout or ""
             
             # Read report
             try:
-                report_content = sb.files.read("/sandbox/report.json")
+                report_content = sb.files.read("/workspace/report.json")
                 result.report = json.loads(report_content)
             except Exception as e:
                 result.report = {"success": False, "error": str(e)}
